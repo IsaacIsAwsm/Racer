@@ -15,6 +15,9 @@ var playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
 var powerups = [];
 var playerSpeedBoosts = [0, 0, 0, 0]; // End time for each player's speed boost
 var numPlayers = 4; // Default to 4 players
+var mobileControls = { up: false, left: false, right: false };
+var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+var mobileControls = { up: false, left: false, right: false };
 var selectedColor = 0xff0000; // Default red color
 
 // Player controls
@@ -215,6 +218,10 @@ function setPlayers(count) {
     startGame();
 }
 
+function mobileControl(direction, pressed) {
+    mobileControls[direction] = pressed;
+}
+
 function createPowerups() {
     powerups = [];
     var positions = [
@@ -277,6 +284,14 @@ function startGame() {
         document.getElementById("fore").innerHTML = "";
         document.getElementById("fore").appendChild(element);
         document.getElementById("fore").style.transform = "none";
+        
+        // Show mobile controls during game for single player on mobile devices
+        if (numPlayers === 1 && isMobile) {
+            var mobileDiv = document.createElement('div');
+            mobileDiv.id = 'mobileControls';
+            mobileDiv.innerHTML = '<button id="leftBtn" ontouchstart="mobileControl(\'left\', true)" ontouchend="mobileControl(\'left\', false)">◀</button><button id="upBtn" ontouchstart="mobileControl(\'up\', true)" ontouchend="mobileControl(\'up\', false)">▲</button><button id="rightBtn" ontouchstart="mobileControl(\'right\', true)" ontouchend="mobileControl(\'right\', false)">▶</button>';
+            document.body.appendChild(mobileDiv);
+        }
         
         loadMap();
         scene.background = new THREE.Color(0x7fb0ff);
@@ -463,7 +478,12 @@ function render() {
         // Update selected number of players
         for(var i = 0; i < numPlayers; i++) {
             var leftKey = false, rightKey = false, upKey = false, downKey = false;
-            if(i === 0) { leftKey = keys.p1Left; rightKey = keys.p1Right; upKey = keys.p1Up; downKey = keys.p1Down; }
+            if(i === 0) { 
+                leftKey = keys.p1Left || mobileControls.left; 
+                rightKey = keys.p1Right || mobileControls.right; 
+                upKey = keys.p1Up || mobileControls.up; 
+                downKey = keys.p1Down; 
+            }
             else if(i === 1) { leftKey = keys.p2Left; rightKey = keys.p2Right; upKey = keys.p2Up; downKey = keys.p2Down; }
             else if(i === 2) { leftKey = keys.p3Left; rightKey = keys.p3Right; upKey = keys.p3Up; downKey = keys.p3Down; }
             else if(i === 3) { leftKey = keys.p4Left; rightKey = keys.p4Right; upKey = keys.p4Up; downKey = keys.p4Down; }
